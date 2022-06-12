@@ -35,6 +35,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
     wcex.lpszClassName = "GLSample";
     wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);;
 
+    float theta = 0.0f;
+
 
     if (!RegisterClassEx(&wcex))
         return 0;
@@ -82,33 +84,35 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
             glPushMatrix();
 
-            glEnable(GL_LINE_STIPPLE);
-            glLineStipple(1, 0x999);
-            glLineWidth(2);
-            glPointSize(10);
-            glBegin(GL_LINE_LOOP);
-                glColor3f(1.0f, 0.0f, 0.0f);
-                glVertex2f(0.5f, 0.5f);
-                glVertex2f(-0.5f, 0.5f);
-                glVertex2f(-0.5f, -0.5f);
-                glVertex2f(0.5f, -0.5f);
-            glEnd();
+            
 
-            float cnt = 16;
-            float l = 0.4f;
-            float x, y, a = 3.1415926 * 2 / cnt;
+            for (int i = 0; i < 8; i++) {
+                glLoadIdentity();
+                glRotatef(theta, 0, 0, 1);
+                glRotatef(45 * i, 0, 0, 1);
+                glTranslatef(0.5, 0, 0);
+                glScalef(1, 1, 1);
 
-            glBegin(GL_TRIANGLE_FAN);
-                glColor3f(0.3f, 0.0f, 1.0f);
-                glVertex2f(0,0);
-                for (int i = -1; i < cnt; i++) {
-                    x = sinf(a * i) * l;
-                    y = cosf(a * i) * l;
-                    glVertex2f(x, y);
-                }
-            glEnd();
+                glBegin(GL_TRIANGLES);
+                    glColor3f(1.0f, 0.0f, 0.0f);
+                    glVertex2f(0.0f, 0.0f);
+                    glVertex2f(0.5f, 0.0f);
+                    glVertex2f(0.0f, 0.5f);
+                glEnd();
+            }
 
             glPopMatrix();
+
+            glPointSize(10);
+
+            glRotatef(theta, 0, 0, 1);
+
+            glBegin(GL_POINTS);
+                glColor3f(1.0f, 0.0f, 0.0f);
+                glVertex2f(0.0f, 0.0f);
+            glEnd();
+
+            theta += 0.6f;
 
             SwapBuffers(hDC);
             Sleep(1);
