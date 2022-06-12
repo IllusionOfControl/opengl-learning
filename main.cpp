@@ -1,5 +1,6 @@
 ﻿#include <windows.h>
 #include <gl/gl.h>
+#include <math.h>
 
 #pragma comment (lib, "opengl32.lib")
 
@@ -19,7 +20,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
     HGLRC hRC;
     MSG msg;
     BOOL bQuit = FALSE;
-    float theta = 0.0f;
 
     /* register window class */
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -77,46 +77,40 @@ int WINAPI WinMain(HINSTANCE hInstance,
         }
         else
         {
-            /* OpenGL animation code goes here */
-
-            // RGRBA
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            // save matrix in stack
             glPushMatrix();
 
-            // Rotation matrix
-            glRotatef(theta, 0.4f, 0.4f, 0.0f);
-
-            glBegin(GL_TRIANGLES);
-
-            // glColor [R, G, B]
-            // glVertex2f [x, y]
-            glColor3f(1.0f, 0.0f, 0.0f);   glVertex2f(0.0f, 1.0f);
-            glColor3f(0.0f, 1.0f, 0.0f);   glVertex2f(0.87f, -0.5f);
-            glColor3f(0.0f, 0.0f, 1.0f);   glVertex2f(-0.87f, -0.5f);
-
+            glEnable(GL_LINE_STIPPLE);
+            glLineStipple(1, 0x999);
+            glLineWidth(2);
+            glPointSize(10);
+            glBegin(GL_LINE_LOOP);
+                glColor3f(1.0f, 0.0f, 0.0f);
+                glVertex2f(0.5f, 0.5f);
+                glVertex2f(-0.5f, 0.5f);
+                glVertex2f(-0.5f, -0.5f);
+                glVertex2f(0.5f, -0.5f);
             glEnd();
 
-            glPopMatrix();
+            float cnt = 16;
+            float l = 0.4f;
+            float x, y, a = 3.1415926 * 2 / cnt;
 
-            glPushMatrix();
-            glRotatef(theta, 0.1f, 0.1f, 0.5f);
-
-            glBegin(GL_TRIANGLES);
-
-            glColor3f(1.0f, 0.0f, 0.0f);   glVertex2f(1.0f, 0.0f);
-            glColor3f(0.0f, 1.0f, 0.0f);   glVertex2f(0.0f, -1.0f);
-            glColor3f(0.0f, 0.0f, 1.0f);   glVertex2f(-0.5f, 0.5f);
-
+            glBegin(GL_TRIANGLE_FAN);
+                glColor3f(0.3f, 0.0f, 1.0f);
+                glVertex2f(0,0);
+                for (int i = -1; i < cnt; i++) {
+                    x = sinf(a * i) * l;
+                    y = cosf(a * i) * l;
+                    glVertex2f(x, y);
+                }
             glEnd();
 
             glPopMatrix();
 
             SwapBuffers(hDC);
-
-            theta += 0.5f;
             Sleep(1);
         }
     }
