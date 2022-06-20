@@ -79,40 +79,114 @@ int WINAPI WinMain(HINSTANCE hInstance,
         }
         else
         {
-            glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
+            static float light = 0;
+
+            //Background
+            glClearColor(0.3f * light, 0.6f * light, 0.1f * light, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            glPushMatrix(); /// ???
+
             glPushMatrix();
-
-            
-
-            for (int i = 0; i < 8; i++) {
-                glLoadIdentity();
-                glRotatef(theta, 0, 0, 1);
-                glRotatef(45 * i, 0, 0, 1);
-                glTranslatef(0.5, 0, 0);
-                glScalef(1, 1, 1);
-
-                glBegin(GL_TRIANGLES);
-                    glColor3f(1.0f, 0.0f, 0.0f);
-                    glVertex2f(0.0f, 0.0f);
-                    glVertex2f(0.5f, 0.0f);
-                    glVertex2f(0.0f, 0.5f);
-                glEnd();
-            }
-
+            glLoadIdentity();
+            glBegin(GL_TRIANGLE_STRIP);
+                glColor3f(0.0f, 0.0f, 0.3f * light);
+                glVertex2f(-1.0f, 1.0f);
+                glVertex2f(-1.0f, 0.3f);
+                glVertex2f(-0.7f, 1.0f);
+                glVertex2f(-0.4f, 0.2f);
+                glVertex2f(-0.15f, 1.0f);
+                glVertex2f(0.1f, 0.36f);
+                glVertex2f(0.3f, 1.0f);
+                glVertex2f(0.53f, 0.32f);
+                glVertex2f(0.7f, 1.0f);
+                glVertex2f(0.9f, 0.28f);
+                glVertex2f(1.0f, 1.0f);
+                glVertex2f(1.0f, 0.24f);
+            glEnd();
             glPopMatrix();
 
-            glPointSize(10);
+            auto drawHome = [](float x, float y, float scale) {
+                glPushMatrix();
+                glLoadIdentity();
 
-            glRotatef(theta, 0, 0, 1);
+                glTranslatef(x, y, 0);
+                glScalef(scale, scale, 1);
 
-            glBegin(GL_POINTS);
-                glColor3f(1.0f, 0.0f, 0.0f);
-                glVertex2f(0.0f, 0.0f);
-            glEnd();
+                // walls
+                glBegin(GL_TRIANGLE_STRIP);
+                glColor3f(0.2f * light, 0.0f, 0.3f * light);
+                glVertex2f(-0.2f, 0.1f);
+                glVertex2f(-0.2f, -0.1f);
+                glVertex2f(0.2f, 0.1f);
+                glVertex2f(0.2f, -0.1f);
+                glEnd();
 
-            theta += 0.6f;
+                // window
+                glBegin(GL_TRIANGLE_STRIP);
+                glColor3f(0.7f * light, 0.7f * light, 0.7f * light);
+                glVertex2f(-0.05f, 0.05f);
+                glVertex2f(-0.05f, -0.05f);
+                glVertex2f(0.05f, 0.05f);
+                glVertex2f(0.05f, -0.05f);
+                glEnd();
+
+                //cells
+                glBegin(GL_LINES);
+                glColor3f(0.0f, 0.0f, 0.0f);
+                glVertex2f(0.0f, 0.05f);
+                glVertex2f(0.0f, -0.05f);
+                glVertex2f(0.05f, 0.0f);
+                glVertex2f(-0.05f, 0.0f);
+                glEnd();
+
+                // pipe
+                glBegin(GL_TRIANGLE_STRIP);
+                glColor3f(0.7f * light, 0.7f * light, 0.7f * light);
+                glVertex2f(0.14f, 0.28f);
+                glVertex2f(0.14f, 0.1f);
+                glVertex2f(0.08f, 0.28f);
+                glVertex2f(0.08f, 0.1f);
+                glEnd();
+
+                //roof
+                glBegin(GL_TRIANGLES);
+                glColor3f(0.6f * light, 0.6f * light, 0.9f * light);
+                glVertex2f(-0.25f, 0.1f);
+                glVertex2f(0.0f, 0.3f);
+                glVertex2f(0.25f, 0.1f);
+                glEnd();
+
+                glPopMatrix(); 
+            };
+
+            auto drawQuad = [](float x, float y, float dx, float dy, float alpha) {
+                glPushMatrix();
+                glLoadIdentity();
+                glTranslatef(0.0f, -1.0f, 0.0f);
+                glRotatef(alpha, 0, 0, 1);
+                glTranslatef(1.7f, 0.0f, 0.0f);
+                glColor3f(1.0f, 1.0f, 0.3f);
+                glBegin(GL_TRIANGLE_FAN);
+                glVertex2f(x, y);
+                glVertex2f(x + dx, y);
+                glVertex2f(x + dx, y + dy);
+                glVertex2f(x, y + dy);
+                glEnd();
+                glPopMatrix();
+            };
+
+            drawHome(-0.7f, -0.6f, 1.2f);
+            drawHome(-0.1f, -0.3f, 0.9f);
+            drawHome(0.7f, -0.48f, 1.0f);
+            drawHome(0.37f, -0.08f, 0.7);
+
+            // sun
+            static float alpha = 0.0f;
+            alpha -= 2;
+            drawQuad(0.0f, 0.0f, 0.2f, 0.2f, alpha);
+
+            light = sin(alpha / 180 * 3.1415926) * 0.40 + 0.5;
 
             SwapBuffers(hDC);
             Sleep(1);
