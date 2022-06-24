@@ -1,14 +1,18 @@
 ﻿#include <windows.h>
 #include <gl/gl.h>
 #include <math.h>
+#include <deque>
 
 #pragma comment (lib, "opengl32.lib")
 
-POINTFLOAT* points = NULL;
-int points_count = 0;
-float scaleY = 1.0f;
+std::deque<POINTFLOAT> points;
+int points_count = 100;
+const float start = 0, end = 20;
+float scaleY = 1.0f, curX = 0, dx = 0;
 
 void FillPoints(float start, float finish, float count);
+void AddNextPoint(float x, float y);
+float CalculateFunction(float x);
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
 void DisableOpenGL(HWND, HDC, HGLRC);
@@ -40,10 +44,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
     wcex.lpszClassName = "GLSample";
     wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);;
 
-
-    FillPoints(10, 20, 100);
-
-
+    curX = end;
+    dx = (end - start) / (points_count - 1);
+    FillPoints(0, curX, points_count);
+    
     if (!RegisterClassEx(&wcex))
         return 0;
 
@@ -104,19 +108,19 @@ int WINAPI WinMain(HINSTANCE hInstance,
             };
 
             auto draw_graph = []() {
-                POINTFLOAT point_first = points[0];
-                POINTFLOAT point_last = points[points_count - 1];
+                POINTFLOAT point_first = points.front();
+                POINTFLOAT point_last = points.back();
                 float sx = 2.0f / (point_last.x - point_first.x);
                 float dx = (point_last.x + point_first.x) * 0.5;
 
-                glColor3f(0.2, 0.2, 0.4);
+                glColor3f(0.6f, 0.6f, 0.8f);
                 glPushMatrix();
-                glScalef(sx, scaleY, 1);
-                glTranslatef(-dx, 0, 0);
+                glScalef(sx, scaleY, 1.0f);
+                glTranslatef(-dx, 0.0f, 0.0f);
 
                 glBegin(GL_LINE_STRIP);
-                for (int i = 0; i < points_count; i++) {
-                    glVertex2f(points[i].x, points[i].y);
+                for (auto p : points) {
+                    glVertex2f(p.x, p.y);
                 }
                 glEnd();
 
@@ -127,9 +131,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glColor3f(1.0f, 1.0f, 1.0f);
+            glColor3f(0.4f, 0.4f, 0.4f);
             draw_axes(0.0f);
             draw_axes(90.0f);
+
+            curX += dx;
+            AddNextPoint(curX, CalculateFunction(curX));
 
             glColor3f(0.0f, 1.0f, 1.0f);
             draw_graph();
@@ -151,16 +158,22 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 
 void FillPoints(float start, float finish, float count) {
-    points_count = count;
-    points = (POINTFLOAT*) malloc(sizeof(*points) * points_count);
-    float dx = (finish - start) / (points_count - 1);
-
-    for (int i = 0; i < points_count; i++) {
-        points[i].x = start;
-        points[i].y = sin(start);
+    for (int i = 0; i < count; i++) {
+        points.push_back(POINTFLOAT{ start, CalculateFunction(start) });
         start += dx;
     }
 }
+
+void AddNextPoint(float x, float y) {
+    points.pop_front();
+    points.push_back(POINTFLOAT{ x, y });
+}
+
+float CalculateFunction(float x) {
+    float y = sinf(x);
+    return y;
+}
+
 
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -175,7 +188,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
 
     case WM_MOUSEWHEEL:
-        if (wParam > 0.0f) scaleY *= 1.5f;
+        if ((int) wParam > 0.0f) scaleY *= 1.5f;
         else scaleY *= 0.7f;
         if (scaleY < 0.02f) scaleY = 0.02f;
         break;
