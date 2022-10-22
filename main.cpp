@@ -7,14 +7,16 @@
 const int w_height = 500;
 const int w_width = 500;
 
-POINTFLOAT vertices[] = {
-    {0,0},
-    {0.5,0},
-    {0.5,0.5},
-    {0,0.5},
-    {0.5,0},
-    {0.75, 0.25},
-    {0.5,0.5}
+float vertices_green[] = {
+    1, 1, 0,
+    -1, 0, 0,
+    1, -1, 0
+};
+
+float vertices_red[] = {
+    1, -1, 0,
+    1, 0, 0,
+    -1, 1, 0
 };
 float colors[] = { 1,0,0,  1,0,0,  1,0,0,  1,0,0,  0,1,1, 0,1,1, 0,1,1 };
 GLuint index[] = { 1,2,3, 3,0,1, 4,5,6};
@@ -72,6 +74,15 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
+    
+    glEnable(GL_DEPTH_TEST);
+
+    glLoadIdentity();
+    // x,x,y,y,z,z
+    //glOrtho(-2, 2, -2, 2, -1, 1);
+    // x,x,y,y,z,z
+    glFrustum(-1, 1, -1, 1, 2, 6);
+    glTranslatef(0,0,-2);
 
     /* program main loop */
     while (!bQuit)
@@ -93,21 +104,23 @@ int WINAPI WinMain(HINSTANCE hInstance,
         else
         {
             /* OpenGL animation code goes here */
-            glRotatef(2, 0, 0, 1);
 
-            // RGRBA
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glTranslatef(0, 0, -0.01);
 
-            glVertexPointer(2, GL_FLOAT, 0, &vertices);
+            glVertexPointer(3, GL_FLOAT, 0, &vertices_green);
             glEnableClientState(GL_VERTEX_ARRAY);
-
-            glColorPointer(3, GL_FLOAT, 0, &colors);
-            glEnableClientState(GL_COLOR_ARRAY);
-                //glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-                glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, &index);
+                glColor3f(0, 1, 0);
+                glDrawArrays(GL_TRIANGLES, 0, 3);
             glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_COLOR_ARRAY);
+
+            glVertexPointer(3, GL_FLOAT, 0, &vertices_red);
+                glEnableClientState(GL_VERTEX_ARRAY);
+                glColor3f(1, 0, 0);
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+            glDisableClientState(GL_VERTEX_ARRAY);
+
 
             SwapBuffers(hDC);
 
